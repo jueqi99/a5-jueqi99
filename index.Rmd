@@ -1,0 +1,65 @@
+---
+title: "index.Rmd"
+author: "Jueqi Liu"
+date: "5/30/2019"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+#Load results from the analysis file
+source("Info201exercise/analysis.R")
+
+# Load additional libraries needed for output
+library("knitr")
+chooseCRANmirror(graphics=FALSE, ind=1)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Summary Information:
+This report summarizes and analyzes some data regarding U.S. shootings that occurred in 2018 ([source](https://www.gunviolencearchive.org/reports/mass-shooting)). The data shows that: `r total_shootings` occurred in 2018, `r total_deaths` were caused by shootings in 2018, `r most_impacted_city` was the city most impacted by shootings in 2018, meaning having the highest total number of deaths and injuries caused by shootings, `r highest_fatal_rate_city` was the city with the highest rate of fatal shootings in 2018, measured by average number of deaths per shooting, and `r most_deaths_date` was the date of the year with the highest number of deaths as a result of shootings.
+
+## Summary Table
+
+Here are the incidents with the highest number of people impacted (killed and injured).
+```{r most_affected_incidents, echo= FALSE}
+#Show the top 15 table of incidents ranked by number of people affected
+kable(most_affected_incidents, col.names = c("Date", "State", "City", "Address", "Number of People Killed/Injured"))
+```
+
+## Stoneman Douglas High School Shooting
+The [Parkland school shooting](https://www.cbsnews.com/feature/parkland-florida-school-shooting/) occurred on `r Parkland_shooting_date`. the incident took place at Stoneman Douglas high school located on `r Parkland_shooting_location`. The assailant was an expelled student of the school. `r Parkland_num_impacted` people were impacted; `r Parkland_num_killed` people were killed and `r Parkland_num_injured` people were injured, making it the deadliest school shooting to date in U.S. history. Student survivors of this shooting began a movement for gun law reform, known as MarchForOurLives.
+
+## Interactive Map 
+This dot distribution map shows the shooting incidents that occurred in 2018. This displays the geographical distribution of shooting incidents between different regions of the United States.
+```{r interactive_map, echo=FALSE}
+leaflet(data=US_2018_shootings_popup) %>%
+  addProviderTiles("CartoDB.Positron") %>%
+  setView(lng = -98, lat = 38, zoom = 4) %>%
+  addCircles(
+    lat = ~lat,
+    lng = ~long,
+    radius = ~num_impacted * 3000,
+    stroke = FALSE,
+    popup = ~popup
+  )
+```
+This map shows that the Western region of the U.S. experienced comparatively less shootings than the Southern and Northeast regions. The map also indicates that San Francisco, Los Angeles, Chicago, Memphis, New York, Philadelphia, and Washington D.C. were cities with notably high frequencies of shootings.
+
+## Plot
+How do the ratios of killed vs injured people in shootings compare in the citites most impacted by shootings? To compare the cities with the highest number of people impacted by shootings, here is a stacked bar graph of the top ten cities with the highest total number of people killed and/or injured in shootings. The bar chart provides an easy comparison of the total number of people killed, and the bars are broken down into how people were affected for comparison of the killed versus injured ratio within and across cities. 
+```{r plot, echo = FALSE}
+ggplot(data = US_2018_shootings_top_cities) +
+    geom_col(
+      mapping = aes(x = reorder(city, num_people),
+                    y = num_people,
+                    fill = Type)
+    ) +
+    coord_flip() +
+    labs (
+      title = "Top Ten Cities with Highest Number of People Impacted by Shootings",
+      x = "Cities",
+      y = "Number of People Impacted",
+      color = "Killed/Injured"
+    )
+```
+This graph shows that Chicago is the city with the most number of people impacted by shootings in 2018 by far. However, we can note that most of the people imacted in Chicago by shootings were injured and not killed. This graph indicates that as the number of people impacted by shootings in each city increases, the number of people killed stays relatively similar (between 5-20 or so), but it's the number of people injured that increases. 
